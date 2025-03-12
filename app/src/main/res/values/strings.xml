@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">AccessibilityTapApp2</string>
+    <string name="accessibility_service_description">Tap Automation Service</string>
+
+</resources>
