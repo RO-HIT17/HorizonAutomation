@@ -12,8 +12,19 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val btnEnableService = findViewById<Button>(R.id.btnEnableService)
+        val btnTap = findViewById<Button>(R.id.btnTap)
+        val btnSwipe = findViewById<Button>(R.id.btnSwipe)
+
         btnEnableService.setOnClickListener {
             startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+        }
+
+        btnTap.setOnClickListener {
+            MyAccessibilityService.instance?.performTap(500f, 500f)
+        }
+
+        btnSwipe.setOnClickListener {
+            MyAccessibilityService.instance?.performSwipe(300f, 1000f, 300f, 500f)
         }
     }
 }

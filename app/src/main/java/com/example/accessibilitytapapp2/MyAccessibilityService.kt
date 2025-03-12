@@ -8,41 +8,43 @@ import android.view.accessibility.AccessibilityEvent
 
 class MyAccessibilityService : AccessibilityService() {
 
-    override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        // You can log or handle events if needed
-    }
-
-    override fun onInterrupt() {
-        // Handle if service is interrupted
+    companion object {
+        var instance: MyAccessibilityService? = null
     }
 
     override fun onServiceConnected() {
         super.onServiceConnected()
-        Log.d("AccessibilityService", "Service Connected")
-
-        // Example: Tap at coordinate (500, 500) when service starts
-        performTap(500f, 500f)
+        instance = this
+        Log.d("AccessibilityService", "Service connected")
     }
 
-    private fun performTap(x: Float, y: Float) {
-        val path = Path()
-        path.moveTo(x, y)
+    override fun onAccessibilityEvent(event: AccessibilityEvent?) {}
 
-        val gestureBuilder = GestureDescription.Builder()
-        gestureBuilder.addStroke(
-            GestureDescription.StrokeDescription(path, 0, 100)
-        )
+    override fun onInterrupt() {}
 
-        val gesture = gestureBuilder.build()
+    fun performTap(x: Float, y: Float) {
+        val path = Path().apply { moveTo(x, y) }
+        val gesture = GestureDescription.Builder()
+            .addStroke(GestureDescription.StrokeDescription(path, 0, 100))
+            .build()
         dispatchGesture(gesture, object : GestureResultCallback() {
             override fun onCompleted(gestureDescription: GestureDescription?) {
-                super.onCompleted(gestureDescription)
                 Log.d("AccessibilityService", "Tap performed")
             }
+        }, null)
+    }
 
-            override fun onCancelled(gestureDescription: GestureDescription?) {
-                super.onCancelled(gestureDescription)
-                Log.d("AccessibilityService", "Tap cancelled")
+    fun performSwipe(startX: Float, startY: Float, endX: Float, endY: Float) {
+        val path = Path().apply {
+            moveTo(startX, startY)
+            lineTo(endX, endY)
+        }
+        val gesture = GestureDescription.Builder()
+            .addStroke(GestureDescription.StrokeDescription(path, 0, 500))
+            .build()
+        dispatchGesture(gesture, object : GestureResultCallback() {
+            override fun onCompleted(gestureDescription: GestureDescription?) {
+                Log.d("AccessibilityService", "Swipe performed")
             }
         }, null)
     }
