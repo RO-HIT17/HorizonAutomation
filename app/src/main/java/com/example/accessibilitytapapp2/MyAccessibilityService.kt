@@ -11,19 +11,35 @@ import android.view.accessibility.AccessibilityNodeInfo
 class MyAccessibilityService : AccessibilityService() {
 
     companion object {
-        var instance: MyAccessibilityService? = null
+        var songNameToSearch: String? = null  // Song name from BroadcastReceiver
     }
+
+    private var hasPerformedAction = false  // Avoid repeat execution
+
 
     override fun onServiceConnected() {
         super.onServiceConnected()
-        instance = this
+        Log.d("Accessibility", "Service Connected")
     }
 
-    override fun onAccessibilityEvent(event: AccessibilityEvent?) {}
+    override fun onAccessibilityEvent(event: AccessibilityEvent?) {
+        if (event != null) {
+            Log.d("AccessibilityService", "Event: ${event.eventType} from ${event.packageName}")
+        }
+
+        if (event?.packageName == "com.spotify.music" && !hasPerformedAction) {
+            songNameToSearch?.let { songName ->
+                performSpotifySongSearch(songName)
+                hasPerformedAction = true  // Prevent multiple triggers
+            }
+        }
+    }
+
     override fun onInterrupt() {}
 
-    fun performSpotifySongSearch(songName: String) {
-        // Coordinates based on your adb script
+    private fun performSpotifySongSearch(songName: String) {
+        Log.d("Accessibility", "Starting to search song: $songName")
+
         performTap(264, 1353) // Tap search icon
         Thread.sleep(2000)
 
@@ -40,15 +56,16 @@ class MyAccessibilityService : AccessibilityService() {
         Thread.sleep(1000)
 
         performTap(300, 1200) // Play button
-        Log.d("SpotifyAutomation", "Song Play sequence completed!")
+        Log.d("Accessibility", "Song play sequence completed")
     }
 
     fun performTap(x: Int, y: Int) {
-        val path = Path().apply { moveTo(x.toFloat(), y.toFloat()) }
-        val gesture = GestureDescription.Builder()
-            .addStroke(GestureDescription.StrokeDescription(path, 0, 100))
-            .build()
-        dispatchGesture(gesture, null, null)
+        val path = Path()
+        path.moveTo(x.toFloat(), y.toFloat())
+
+        val gestureBuilder = GestureDescription.Builder()
+        gestureBuilder.addStroke(GestureDescription.StrokeDescription(path, 0, 100))
+        dispatchGesture(gestureBuilder.build(), null, null)
     }
 
     fun inputText(text: String) {
