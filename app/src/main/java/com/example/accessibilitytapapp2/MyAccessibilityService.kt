@@ -27,33 +27,35 @@ class MyAccessibilityService : AccessibilityService() {
             Log.d("AccessibilityService", "Event: ${event.eventType} from ${event.packageName}")
         }
 
-        if (event?.packageName == "com.spotify.music" && !hasPerformedAction) {
-            songNameToSearch?.let { songName ->
-                performSpotifySongSearch(songName)
+        if (event?.packageName == "com.spotify.music" && event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED && !hasPerformedAction) {
+            Log.d("AccessibilityService", "Event 2: ${event.eventType} from ${event.packageName}")
+
+                performSpotifySongSearch()
                 hasPerformedAction = true  // Prevent multiple triggers
-            }
+
         }
     }
 
     override fun onInterrupt() {}
 
-    private fun performSpotifySongSearch(songName: String) {
+    private fun performSpotifySongSearch() {
+        val songName = "Tum Sath Ho"
         Log.d("Accessibility", "Starting to search song: $songName")
 
         performTap(264, 1353) // Tap search icon
-        Thread.sleep(2000)
+        Thread.sleep(10000)
 
         performTap(264, 1353) // Tap search bar
-        Thread.sleep(1000)
+        Thread.sleep(10000)
 
         inputText(songName)  // Type song name
-        Thread.sleep(2000)
+        Thread.sleep(10000)
 
         performTap(173, 226) // Select result
-        Thread.sleep(3000)
+        Thread.sleep(10000)
 
         performTap(92, 277)  // Select first item
-        Thread.sleep(1000)
+        Thread.sleep(10000)
 
         performTap(300, 1200) // Play button
         Log.d("Accessibility", "Song play sequence completed")
