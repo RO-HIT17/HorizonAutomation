@@ -26,4 +26,13 @@
         android:text="Swipe Up"
         android:layout_marginTop="16dp" />
 
+        <Button
+            android:id="@+id/playSongButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Play Song"
+            android:textSize="18sp" />
+
+
+
 </LinearLayout>

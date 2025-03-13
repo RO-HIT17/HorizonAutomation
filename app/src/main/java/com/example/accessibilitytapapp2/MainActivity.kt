@@ -19,12 +19,18 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
         }
 
-        btnTap.setOnClickListener {
-            MyAccessibilityService.instance?.performTap(500f, 500f)
+        val button = findViewById<Button>(R.id.playSongButton)
+        button.setOnClickListener {
+            val intent = Intent("ACTION_PLAY_SONG")
+            sendBroadcast(intent)
         }
 
-        btnSwipe.setOnClickListener {
-            MyAccessibilityService.instance?.performSwipe(300f, 1000f, 300f, 500f)
-        }
+        //btnTap.setOnClickListener {
+        //    MyAccessibilityService.instance?.performTap(500f, 500f)
+        //}
+
+        //btnSwipe.setOnClickListener {
+        //    MyAccessibilityService.instance?.performSwipe(300f, 1000f, 300f, 500f)
+        //}
     }
 }
