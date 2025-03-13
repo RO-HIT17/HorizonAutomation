@@ -6,7 +6,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.graphics.Path
-import android.os.Bundle
+import android.os.*
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
@@ -14,172 +14,153 @@ import android.view.accessibility.AccessibilityNodeInfo
 class MyAccessibilityService : AccessibilityService() {
 
     companion object {
-        var songNameToSearch: String? = null  // Song name to be received dynamically
+        var songNameToSearch: String? = null  // Song name from BroadcastReceiver (future use)
     }
 
-    private var hasPerformedAction = false  // Prevents repeated execution
-
+    private var hasPerformedAction = false  // To avoid repeated execution
 
     override fun onServiceConnected() {
         super.onServiceConnected()
-        Log.d("AccessibilityService", "Service Connected")
+        Log.d("Accessibility", "Service Connected")
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        if (event == null) return
+        if (event != null) {
+            Log.d("AccessibilityService", "Event: ${event.eventType} from ${event.packageName}")
+        }
 
-        Log.d("AccessibilityService", "Event: ${event.eventType} from ${event.packageName}")
-
-        // Check for Spotify package and specific window state change event
-        if (event.packageName == "com.spotify.music" && event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED && !hasPerformedAction) {
-            Log.d("AccessibilityService", "Spotify window detected. Initiating search...")
+        // Trigger only once when Spotify screen is opened
+        if (event?.packageName == "com.spotify.music" && event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED && !hasPerformedAction) {
+            Log.d("AccessibilityService", "Spotify window detected, starting automation")
             performSpotifySongSearch()
-            hasPerformedAction = true  // Avoid re-triggering
+            hasPerformedAction = true  // Avoid multiple triggers
         }
     }
 
-    override fun onInterrupt() {
-        Log.e("AccessibilityService", "Service interrupted")
-    }
+    override fun onInterrupt() {}
 
     /**
-     * Automates the Spotify song search and play
+     * Perform sequence to search and play a song
      */
     private fun performSpotifySongSearch() {
         val songName = songNameToSearch ?: "Tum Sath Ho" // Default if null
         Log.d("AccessibilityService", "Starting search for song: $songName")
 
-        // Sequence of actions (tap and input)
-        performTap(264, 1353)  // Tap on search icon
-        sleep(5000)
+        // Step 1: Tap on search icon
+        performTap(264, 1353)  // Search icon
+        Handler(Looper.getMainLooper()).postDelayed({
 
-        performTap(264, 1353)  // Tap on search bar
-        sleep(5000)
+            // Step 2: Tap on search bar
+            performTap(264, 1353)  // Search bar
+            Handler(Looper.getMainLooper()).postDelayed({
 
-        inputTextOrPaste(songName)  // Type or paste song name
-        sleep(5000)
+                // Step 3: Input song name using clipboard and paste
+                inputTextViaClipboardWithLongPress(264, 1353, songName)
+                Handler(Looper.getMainLooper()).postDelayed({
 
-        performTap(173, 226)   // Select search result
-        sleep(5000)
+                    // Step 4: Tap on search result
+                    performTap(173, 226)  // First search result
+                    Handler(Looper.getMainLooper()).postDelayed({
 
-        performTap(92, 277)    // Select first item
-        sleep(5000)
+                        // Step 5: Tap on first item
+                        performTap(92, 277)  // First item from search result
+                        Handler(Looper.getMainLooper()).postDelayed({
 
-        performTap(300, 1200)  // Play the song
-        Log.d("AccessibilityService", "Song play sequence completed")
+                            // Step 6: Tap on play button
+                            performTap(300, 1200)  // Play button
+                            Log.d("AccessibilityService", "Song play sequence completed")
+
+                        }, 5000)  // 5 sec delay before play button tap
+                    }, 5000)  // 5 sec delay before selecting first item
+                }, 5000)  // 5 sec delay for pasting text
+            }, 5000)  // 5 sec delay before tapping search bar
+        }, 5000)  // 5 sec delay after tapping search icon
     }
 
     /**
-     * Performs tap at specified (x, y)
+     * Perform tap at given coordinates
      */
-    private fun performTap(x: Int, y: Int) {
+    fun performTap(x: Int, y: Int) {
         val path = Path().apply { moveTo(x.toFloat(), y.toFloat()) }
-
         val gestureBuilder = GestureDescription.Builder()
         gestureBuilder.addStroke(GestureDescription.StrokeDescription(path, 0, 100))
-
         dispatchGesture(gestureBuilder.build(), object : GestureResultCallback() {
             override fun onCompleted(gestureDescription: GestureDescription?) {
-                super.onCompleted(gestureDescription)
-                Log.d("AccessibilityService", "Gesture completed at ($x, $y)")
+                Log.d("Accessibility", "Tap at ($x, $y) completed")
             }
 
             override fun onCancelled(gestureDescription: GestureDescription?) {
-                super.onCancelled(gestureDescription)
-                Log.e("AccessibilityService", "Gesture cancelled at ($x, $y)")
+                Log.e("Accessibility", "Tap at ($x, $y) cancelled")
             }
         }, null)
     }
 
     /**
-     * Try direct input, else clipboard + paste
+     * Perform long press at given coordinates
      */
-    private fun inputTextOrPaste(text: String) {
-        val rootNode = rootInActiveWindow ?: run {
-            Log.e("AccessibilityService", "No active window found for input")
-            return
-        }
-
-        val inputField = findEditableNode(rootNode)
-
-        if (inputField != null) {
-            val args = Bundle()
-            args.putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, text)
-            val success = inputField.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, args)
-            if (success) {
-                Log.d("AccessibilityService", "Text input successful")
-            } else {
-                Log.e("AccessibilityService", "Direct text input failed, using clipboard")
-                useClipboardToPaste(text)
+    fun performLongPress(x: Int, y: Int) {
+        val path = Path().apply { moveTo(x.toFloat(), y.toFloat()) }
+        val gestureBuilder = GestureDescription.Builder()
+        gestureBuilder.addStroke(GestureDescription.StrokeDescription(path, 0, 1000)) // 1 sec long press
+        dispatchGesture(gestureBuilder.build(), object : GestureResultCallback() {
+            override fun onCompleted(gestureDescription: GestureDescription?) {
+                Log.d("Accessibility", "Long press at ($x, $y) completed")
             }
-        } else {
-            Log.e("AccessibilityService", "No editable field found, using clipboard")
-            useClipboardToPaste(text)
-        }
+
+            override fun onCancelled(gestureDescription: GestureDescription?) {
+                Log.e("Accessibility", "Long press at ($x, $y) cancelled")
+            }
+        }, null)
     }
 
     /**
-     * Fallback to clipboard and try pasting
+     * Input text using clipboard, long press and paste method
      */
-    private fun useClipboardToPaste(text: String) {
+    fun inputTextViaClipboardWithLongPress(x: Int, y: Int, text: String) {
+        copyTextToClipboard(text)  // Copy to clipboard
+        performLongPress(x, y)     // Long press on search bar
+
+        // Wait for "Paste" option to appear and click it
+        Handler(Looper.getMainLooper()).postDelayed({
+            pasteTextIfPossible()
+        }, 1500)  // Adjust delay as per device responsiveness
+    }
+
+    /**
+     * Copy text to clipboard
+     */
+    fun copyTextToClipboard(text: String) {
         val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clip = ClipData.newPlainText("song_name", text)
         clipboard.setPrimaryClip(clip)
-        Log.d("AccessibilityService", "Copied '$text' to clipboard")
-
-        // Try to press Paste if available
-        pasteTextIfPossible()
+        Log.d("Accessibility", "Text copied to clipboard: $text")
     }
 
     /**
-     * Looks for a 'Paste' button and clicks it
+     * Find and click "Paste" button from contextual menu
      */
-    private fun pasteTextIfPossible() {
+    fun pasteTextIfPossible() {
         val rootNode = rootInActiveWindow ?: return
-        val pasteButton = findNodeWithText(rootNode, "Paste") // Can vary: use "PASTE" if all caps
+        val pasteButton = findNodeWithText(rootNode, "Paste")  // Look for 'Paste' option
 
         if (pasteButton != null) {
             pasteButton.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-            Log.d("AccessibilityService", "Clicked 'Paste'")
+            Log.d("Accessibility", "'Paste' clicked successfully")
         } else {
-            Log.e("AccessibilityService", "No 'Paste' button found")
+            Log.e("Accessibility", "'Paste' button not found")
         }
     }
 
     /**
-     * Recursively finds editable input field
+     * Recursively search for a node containing specific text
      */
-    private fun findEditableNode(node: AccessibilityNodeInfo?): AccessibilityNodeInfo? {
-        if (node == null) return null
-        if (node.isEditable) return node
-
-        for (i in 0 until node.childCount) {
-            findEditableNode(node.getChild(i))?.let { return it }
-        }
-        return null
-    }
-
-    /**
-     * Recursively searches for text match in nodes
-     */
-    private fun findNodeWithText(node: AccessibilityNodeInfo?, text: String): AccessibilityNodeInfo? {
+    fun findNodeWithText(node: AccessibilityNodeInfo?, text: String): AccessibilityNodeInfo? {
         if (node == null) return null
         if (node.text?.toString()?.contains(text, ignoreCase = true) == true) return node
-
         for (i in 0 until node.childCount) {
-            findNodeWithText(node.getChild(i), text)?.let { return it }
+            val result = findNodeWithText(node.getChild(i), text)
+            if (result != null) return result
         }
         return null
-    }
-
-    /**
-     * Helper function to sleep safely
-     */
-    private fun sleep(ms: Long) {
-        try {
-            Thread.sleep(ms)
-        } catch (e: InterruptedException) {
-            Log.e("AccessibilityService", "Sleep interrupted: ${e.message}")
-        }
     }
 }
