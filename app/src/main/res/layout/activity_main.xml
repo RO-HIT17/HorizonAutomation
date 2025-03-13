@@ -7,23 +7,10 @@
     android:padding="16dp">
 
     <Button
-        android:id="@+id/btnEnableService"
+        android:id="@+id/playSongButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Enable Accessibility Service" />
-
-    <Button
-        android:id="@+id/btnTap"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Tap at (500,500)"
-        android:layout_marginTop="16dp" />
-
-    <Button
-        android:id="@+id/btnSwipe"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Swipe Up"
-        android:layout_marginTop="16dp" />
-
+        android:text="Play Song"
+        android:textSize="20sp"
+        android:padding="16dp" />
 </LinearLayout>
