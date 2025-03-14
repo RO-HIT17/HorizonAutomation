@@ -1,5 +1,6 @@
 package com.example.accessibilitytapapp2
 
+import kotlinx.coroutines.*
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.GestureDescription
 import android.content.ClipData
@@ -42,30 +43,28 @@ class MyAccessibilityService : AccessibilityService() {
         val songName = songNameToSearch ?: "Tum Sath Ho"
         Log.d("AccessibilityService", "Starting search for song: $songName")
 
-        performTap(264, 1353)
-        Handler(Looper.getMainLooper()).postDelayed({
+        CoroutineScope(Dispatchers.Main).launch {
+            delay(5000)
+            performTap(264, 1353)
+            delay(5000)
 
             performTap(264, 1353)
-            Handler(Looper.getMainLooper()).postDelayed({
+            delay(5000)
 
-                inputTextViaClipboardWithLongPress(264, 1353, songName)
-                Handler(Looper.getMainLooper()).postDelayed({
+            inputTextViaClipboardWithLongPress(98, 109, songName)
+            delay(5000)
 
-                    performTap(173, 226)
-                    Handler(Looper.getMainLooper()).postDelayed({
+            performTap(173, 226)
+            delay(5000)
 
+            performTap(92, 277)
+            delay(5000)
 
-                        performTap(92, 277)
-                        Handler(Looper.getMainLooper()).postDelayed({
+            performTap(300, 1200)
+            delay(5000)
 
-                            performTap(300, 1200)
-                            Log.d("AccessibilityService", "Song play sequence completed")
-
-                        }, 5000)
-                    }, 5000)
-                }, 5000)
-            }, 5000)
-        }, 5000)
+            Log.d("AccessibilityService", "Song play sequence completed")
+        }
     }
 
     fun performTap(x: Int, y: Int) {
@@ -103,9 +102,16 @@ class MyAccessibilityService : AccessibilityService() {
         performLongPress(x, y)
 
         Handler(Looper.getMainLooper()).postDelayed({
+            performTap(36, 246)
+            Log.d("Accessibility", "Tapped on Paste")
+        }, 2000)
+        /*
+        Handler(Looper.getMainLooper()).postDelayed({
             pasteTextIfPossible()
-        }, 1500)
+        }, 4000)
+    */
     }
+
 
     fun copyTextToClipboard(text: String) {
         val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
