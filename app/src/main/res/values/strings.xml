@@ -1,6 +1,5 @@
 <resources>
-    <string name="app_name">AccessibilityTapApp2</string>
-    <string name="accessibility_service_description">Spotify song auto play</string>
-
-
+    <string name="app_name">Horizon</string>
+    <string name="accessibility_service_description">Enable Gestures</string>
+    <string name="description">Enable Gestures</string>
 </resources>

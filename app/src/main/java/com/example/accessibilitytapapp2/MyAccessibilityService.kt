@@ -14,10 +14,10 @@ import android.view.accessibility.AccessibilityNodeInfo
 class MyAccessibilityService : AccessibilityService() {
 
     companion object {
-        var songNameToSearch: String? = null  // Song name from BroadcastReceiver (future use)
+        var songNameToSearch: String? = null
     }
 
-    private var hasPerformedAction = false  // To avoid repeated execution
+    private var hasPerformedAction = false
 
     override fun onServiceConnected() {
         super.onServiceConnected()
@@ -29,57 +29,45 @@ class MyAccessibilityService : AccessibilityService() {
             Log.d("AccessibilityService", "Event: ${event.eventType} from ${event.packageName}")
         }
 
-        // Trigger only once when Spotify screen is opened
         if (event?.packageName == "com.spotify.music" && event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED && !hasPerformedAction) {
             Log.d("AccessibilityService", "Spotify window detected, starting automation")
             performSpotifySongSearch()
-            hasPerformedAction = true  // Avoid multiple triggers
+            hasPerformedAction = true
         }
     }
 
     override fun onInterrupt() {}
 
-    /**
-     * Perform sequence to search and play a song
-     */
     private fun performSpotifySongSearch() {
-        val songName = songNameToSearch ?: "Tum Sath Ho" // Default if null
+        val songName = songNameToSearch ?: "Tum Sath Ho"
         Log.d("AccessibilityService", "Starting search for song: $songName")
 
-        // Step 1: Tap on search icon
-        performTap(264, 1353)  // Search icon
+        performTap(264, 1353)
         Handler(Looper.getMainLooper()).postDelayed({
 
-            // Step 2: Tap on search bar
-            performTap(264, 1353)  // Search bar
+            performTap(264, 1353)
             Handler(Looper.getMainLooper()).postDelayed({
 
-                // Step 3: Input song name using clipboard and paste
                 inputTextViaClipboardWithLongPress(264, 1353, songName)
                 Handler(Looper.getMainLooper()).postDelayed({
 
-                    // Step 4: Tap on search result
-                    performTap(173, 226)  // First search result
+                    performTap(173, 226)
                     Handler(Looper.getMainLooper()).postDelayed({
 
-                        // Step 5: Tap on first item
-                        performTap(92, 277)  // First item from search result
+
+                        performTap(92, 277)
                         Handler(Looper.getMainLooper()).postDelayed({
 
-                            // Step 6: Tap on play button
-                            performTap(300, 1200)  // Play button
+                            performTap(300, 1200)
                             Log.d("AccessibilityService", "Song play sequence completed")
 
-                        }, 5000)  // 5 sec delay before play button tap
-                    }, 5000)  // 5 sec delay before selecting first item
-                }, 5000)  // 5 sec delay for pasting text
-            }, 5000)  // 5 sec delay before tapping search bar
-        }, 5000)  // 5 sec delay after tapping search icon
+                        }, 5000)
+                    }, 5000)
+                }, 5000)
+            }, 5000)
+        }, 5000)
     }
 
-    /**
-     * Perform tap at given coordinates
-     */
     fun performTap(x: Int, y: Int) {
         val path = Path().apply { moveTo(x.toFloat(), y.toFloat()) }
         val gestureBuilder = GestureDescription.Builder()
@@ -95,9 +83,6 @@ class MyAccessibilityService : AccessibilityService() {
         }, null)
     }
 
-    /**
-     * Perform long press at given coordinates
-     */
     fun performLongPress(x: Int, y: Int) {
         val path = Path().apply { moveTo(x.toFloat(), y.toFloat()) }
         val gestureBuilder = GestureDescription.Builder()
@@ -113,22 +98,15 @@ class MyAccessibilityService : AccessibilityService() {
         }, null)
     }
 
-    /**
-     * Input text using clipboard, long press and paste method
-     */
     fun inputTextViaClipboardWithLongPress(x: Int, y: Int, text: String) {
-        copyTextToClipboard(text)  // Copy to clipboard
-        performLongPress(x, y)     // Long press on search bar
+        copyTextToClipboard(text)
+        performLongPress(x, y)
 
-        // Wait for "Paste" option to appear and click it
         Handler(Looper.getMainLooper()).postDelayed({
             pasteTextIfPossible()
-        }, 1500)  // Adjust delay as per device responsiveness
+        }, 1500)
     }
 
-    /**
-     * Copy text to clipboard
-     */
     fun copyTextToClipboard(text: String) {
         val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clip = ClipData.newPlainText("song_name", text)
@@ -136,12 +114,9 @@ class MyAccessibilityService : AccessibilityService() {
         Log.d("Accessibility", "Text copied to clipboard: $text")
     }
 
-    /**
-     * Find and click "Paste" button from contextual menu
-     */
     fun pasteTextIfPossible() {
         val rootNode = rootInActiveWindow ?: return
-        val pasteButton = findNodeWithText(rootNode, "Paste")  // Look for 'Paste' option
+        val pasteButton = findNodeWithText(rootNode, "Paste")
 
         if (pasteButton != null) {
             pasteButton.performAction(AccessibilityNodeInfo.ACTION_CLICK)
@@ -151,9 +126,6 @@ class MyAccessibilityService : AccessibilityService() {
         }
     }
 
-    /**
-     * Recursively search for a node containing specific text
-     */
     fun findNodeWithText(node: AccessibilityNodeInfo?, text: String): AccessibilityNodeInfo? {
         if (node == null) return null
         if (node.text?.toString()?.contains(text, ignoreCase = true) == true) return node
