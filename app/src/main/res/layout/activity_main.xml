@@ -13,18 +13,12 @@
         android:text="Enable Accessibility Service" />
 
     <Button
-        android:id="@+id/btnTap"
+        android:id="@+id/voiceInputButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Tap at (500,500)"
+        android:text="Voice"
         android:layout_marginTop="16dp" />
 
-    <Button
-        android:id="@+id/btnSwipe"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Swipe Up"
-        android:layout_marginTop="16dp" />
 
         <Button
             android:id="@+id/playSongButton"

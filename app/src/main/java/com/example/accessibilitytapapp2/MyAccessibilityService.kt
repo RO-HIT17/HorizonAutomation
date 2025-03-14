@@ -40,7 +40,7 @@ class MyAccessibilityService : AccessibilityService() {
     override fun onInterrupt() {}
 
     private fun performSpotifySongSearch() {
-        val songName = songNameToSearch ?: "Tum Sath Ho"
+        val songName = songNameToSearch ?: "Blinding Lights"
         Log.d("AccessibilityService", "Starting search for song: $songName")
 
         CoroutineScope(Dispatchers.Main).launch {
