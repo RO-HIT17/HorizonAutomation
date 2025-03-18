@@ -5,7 +5,7 @@ import java.net.*
 import android.util.Log
 
 class SocketServer(private val callback: (String) -> Unit) {
-    private val PORT = 9999
+    private val PORT = 5000
     private var serverThread: Thread? = null
     private var serverSocket: ServerSocket? = null
 
